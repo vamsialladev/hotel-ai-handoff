@@ -1,0 +1,17 @@
+[project]
+name = "hotel-ai-handoff"
+version = "1.0.0"
+description = "Client handoff package for the simulated hotel group's AI systems: runbooks, SLOs, guides, health check"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Vamsi Alla" }]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

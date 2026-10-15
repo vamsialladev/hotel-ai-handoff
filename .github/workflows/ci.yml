@@ -1,0 +1,38 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Markdown lint and link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Markdown lint
+        uses: DavidAnson/markdownlint-cli2-action@v24
+        with:
+          globs: "**/*.md"
+      - name: Link check (internal links must resolve; external links are checked too)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --cookie-jar lychee-cookies.json --max-retries 3 --accept "200..=299,403,429,503,999" --exclude "^https://(www\.)?linkedin\.com" --exclude "^http://localhost" './**/*.md'
+          fail: true
+
+  health-check-tests:
+    name: Health check tests (asleep vs down)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Lint and format check
+        run: |
+          ruff check .
+          ruff format --check .
+      - run: python -m pytest -q

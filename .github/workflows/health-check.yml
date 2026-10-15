@@ -1,0 +1,39 @@
+name: Health check
+
+# Once a day: is each live app up, asleep (free hosting, not an alarm) or down? Opens one issue labelled
+# health-alert when an app is down or (with the optional HEALTH_DATABASE_URL secret) errors are over 20% in 24 hours.
+on:
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install the optional database driver
+        run: pip install "psycopg[binary]~=3.3"
+      - name: Check both apps
+        env:
+          HEALTH_DATABASE_URL: ${{ secrets.HEALTH_DATABASE_URL }}
+        run: python scripts/health_check.py --alert-file alert.md
+      - name: Open or update the health-alert issue
+        if: hashFiles('alert.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create health-alert --color B60205 --description "Daily health check found a problem" 2>/dev/null || true
+          number=$(gh issue list --label health-alert --state open --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body-file alert.md
+          else
+            gh issue create --title "Health check: an app needs attention" --label health-alert --body-file alert.md
+          fi

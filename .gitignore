@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+alert.md
+
+# Private brand notes, drafts and photos (kept outside the repos; never commit)
+brand-content/
+# Old resume versions (kept outside the repos; never commit)
+resume-archive/
+
+# Demo video and its raw recording (published on the portfolio site, not in this repo)
+docs/video/
