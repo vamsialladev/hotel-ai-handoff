@@ -34,6 +34,8 @@ redaction off and shows the check catches it.
 Records older than **30 days** (`RETENTION_DAYS`) are deleted by the apps once a day and on demand with
 `python scripts/retention.py`. Without `DATABASE_URL` the apps keep logs only in temporary files that reset on restart.
 
+**Live since 2026-10-16:** both live apps log to Neon Postgres. Checked that day: a visitor request with a planted name, email and phone was stored with all three replaced by `[name]`, `[email]`, `[phone]`, and the Operations page reads it.
+
 ## Access and sign-in
 
 | Who | Control |

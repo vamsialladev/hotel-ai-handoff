@@ -216,7 +216,24 @@ def start_local(password: str, log_dir: str) -> subprocess.Popen:
         "PRICE_OUT_PER_M": "0.50",
     }
     env.pop("STAFF_PASSWORD", None)
+    # A clean export of the committed code: no .streamlit/secrets.toml (Streamlit would let it override the one-time
+    # password) and no .env. Only the API key is passed, in memory, for the two preparation questions.
+    from dotenv import dotenv_values
+
+    env["ANTHROPIC_API_KEY"] = dotenv_values(P1 / ".env").get("ANTHROPIC_API_KEY") or ""
+    tree = Path(log_dir) / "app"
+    tree.mkdir()
+    archive = subprocess.run(["git", "-C", str(P1), "archive", "HEAD"], check=True, capture_output=True).stdout
+    subprocess.run(["tar", "-x", "-C", str(tree)], input=archive, check=True)
     python = P1 / ".venv" / "Scripts" / "python.exe"
+    subprocess.run(
+        [str(python), "-m", "src.ingest", "--bm25-only"],
+        cwd=tree,
+        env=env,
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     cmd = [
         str(python),
         "-m",
@@ -230,7 +247,7 @@ def start_local(password: str, log_dir: str) -> subprocess.Popen:
         "--browser.gatherUsageStats",
         "false",
     ]
-    proc = subprocess.Popen(cmd, cwd=P1, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(cmd, cwd=tree, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     import urllib.request
 
     for _ in range(90):
@@ -300,7 +317,7 @@ def record(durations: dict) -> dict:
             page.locator("input[type=password]").first.fill(password)
             page.get_by_role("button", name="Unlock").click()
             page.wait_for_selector("h1.hoa-title:has-text('Admin')", timeout=60_000)
-            page.goto(f"{local}operations", timeout=120_000)
+            page.locator("[data-testid=stSidebarNav] a", has_text="Operations").first.click()  # same session
             page.wait_for_selector("h1.hoa-title:has-text('Operations')", timeout=60_000)
             r.pause(2)
             show(page, "Budgets")

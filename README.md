@@ -62,7 +62,7 @@ reported, not tuned: the agent's held-out key facts are 80% (H03 no longer volun
 the injected text is removed).
 
 Also new in both apps: a persistent log in Postgres with **personal data redacted before storage** and 30-day
-retention, a Staff role next to the open Demo mode, a kill switch, timeouts with retries, an owner **Operations**
+retention (**live on Neon since 2026-10-16**, checked with a planted-PII request on both apps), a Staff role next to the open Demo mode, a kill switch, timeouts with retries, an owner **Operations**
 page with latency and cost **budgets** (also gated in CI), and `docker compose up` with its own Postgres.
 
 ## Start here

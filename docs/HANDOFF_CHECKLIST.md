@@ -1,7 +1,7 @@
 # Handoff readiness checklist
 
 Every item links to its evidence. Items that need the owner's own accounts or passwords are marked **owner** and are
-checked by the owner, never by the builder. Status as of 2026-10-15.
+checked by the owner, never by the builder. Status as of 2026-10-16.
 
 ## Systems
 
@@ -34,9 +34,11 @@ checked by the owner, never by the builder. Status as of 2026-10-15.
 
 ## Owner (needs the owner's accounts)
 
-- [ ] **owner** Neon database created and `DATABASE_URL` + `STAFF_PASSWORD` added to both apps' Secrets — then the
-  Operations page shows "Postgres database, reachable" and a question appears in the log after a reboot
-- [ ] **owner** Live staff sign-in checked on both apps with the real `STAFF_PASSWORD`
+- [x] **owner** Neon database created and `DATABASE_URL` + `STAFF_PASSWORD` added to both apps' Secrets — verified
+  2026-10-16: a live request on each app was stored in Postgres with personal data redacted; the Operations page
+  reads it (checked from a local run against the live database)
+- [ ] **owner** Live staff sign-in checked on both apps with the real `STAFF_PASSWORD` (sign-in is offered on both live
+  apps; the flow is verified with a one-time password against the live database; the builder never types real passwords)
 - [ ] **owner** Live Admin and Operations pages checked by hand
-- [ ] **owner** `HEALTH_DATABASE_URL` added as an Actions secret here (enables the error-rate check)
+- [x] `HEALTH_DATABASE_URL` added as an Actions secret here (enables the error-rate check), 2026-10-16
 - [ ] **owner** Anthropic monthly spending limit confirmed
