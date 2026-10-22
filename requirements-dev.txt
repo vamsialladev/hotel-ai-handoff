@@ -1,4 +1,4 @@
 # The health check uses only the standard library; psycopg is needed only for the optional error-rate check.
 pytest~=9.1
-ruff==0.17.0
+ruff==0.17.1
 psycopg[binary]~=3.3
