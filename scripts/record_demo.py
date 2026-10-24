@@ -1,4 +1,4 @@
-"""Record the one narrated, captioned demo for Projects 4 and 5 (production hardening + client handoff).
+"""Record the one captioned demo for Projects 4 and 5 (production hardening + client handoff).
 
 python scripts/record_demo.py --web-out ../vamsi-portfolio/videos/production-and-handoff-demo.mp4 \
     --linkedin-out ../linkedin-post-4/video.mp4
@@ -10,9 +10,10 @@ Scenes, all real:
    here and never printed or shown; the live Admin password is never typed), after asking two questions there.
 4. This handoff package on GitHub: the runbooks.
 
-Narration: Piper en_US-lessac-high (open source, offline), labelled "Narration: AI voice". Captions: a WebVTT track
-and a burned-in copy for LinkedIn. Costs a few API calls (two questions on the local run; the live runs may reuse
-results). Dev-only: Playwright, piper-tts, Pillow and ffmpeg on PATH. docs/video/ is git-ignored.
+No narration: the video is a silent screen recording with burned-in step captions. I record my own voice
+over it from docs/VIDEO_SCRIPT.md (no AI voice); scripts/make_captions.py then captions my voice.
+Captions: a WebVTT track and a LinkedIn copy. Costs a few API calls (two questions on the local run; the live
+runs may reuse results). Dev-only: Playwright, Pillow and ffmpeg on PATH. docs/video/ is git-ignored.
 """
 
 import argparse
@@ -22,10 +23,8 @@ import re
 import secrets
 import shutil
 import subprocess
-import sys
 import tempfile
 import time
-import wave
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -34,9 +33,6 @@ ROOT = Path(__file__).resolve().parent.parent
 P1 = ROOT.parent / "hotel-ops-assistant"
 OUT = ROOT / "docs" / "video"
 WORK = OUT / "work"
-VOICES = OUT / "voices"
-SHARED_VOICES = ROOT.parent / "guest-request-agent" / "docs" / "video" / "voices"
-VOICE = "en_US-lessac-high"
 P1_APP = "https://hotel-ops-assistant.streamlit.app/~/+/"
 P2_APP = "https://guest-request-agent.streamlit.app/~/+/"
 HANDOFF = "https://github.com/vamsialladev/hotel-ai-handoff/blob/main/docs/RUNBOOKS.md"
@@ -55,22 +51,7 @@ TITLE = "Production and handoff"
 SUBTITLE = "Simulated client engagement · synthetic data · parts four and five of five"
 TITLE_SECONDS = 3
 LEAD, GAP = 0.4, 0.35
-SPEED = 1.08
 
-NARRATION = {
-    "title": "Production and handoff: a simulated client project, parts four and five of five.",
-    "spanish": "The eval harness found real gaps. Spanish questions were blocked before they reached the model. "
-    "Now the answer comes back in Spanish, from the English documents, with its source.",
-    "safety": "Emergencies in other words, or in Spanish, were missed. Now they get the safety message at once, "
-    "with no model call.",
-    "agent": "A guest booked at the Mountain Lodge wrote to the Beach Resort. The agent used to answer for the wrong "
-    "hotel. Now the booking is looked up first, so the reply is about the right one.",
-    "ops": "On a local copy, the owner's Operations page shows requests, latency and cost against budgets. Every "
-    "log record has personal data removed before it is stored, and is kept for thirty days.",
-    "handoff": "And the handoff package: runbooks, service levels, staff guides, and a daily health check that "
-    "knows a sleeping free app from a broken one.",
-    "end": "Every number comes from a saved run. The links are on screen.",
-}
 CAPTIONS = {
     "spanish": "Spanish question → Spanish answer, cited (was blocked before the model).",
     "safety": "Emergency in other words → safety message at once, no model call.",
@@ -78,42 +59,6 @@ CAPTIONS = {
     "ops": "Operations page (local run, test password): budgets, cost, latency.",
     "handoff": "Handoff package: runbooks, SLOs, guides, daily health check.",
 }
-
-
-# ---------------------------------------------------------------- narration
-def voice_model() -> Path:
-    model = VOICES / f"{VOICE}.onnx"
-    if not model.exists():
-        VOICES.mkdir(parents=True, exist_ok=True)
-        shared = SHARED_VOICES / f"{VOICE}.onnx"
-        if shared.exists():
-            for f in SHARED_VOICES.glob(f"{VOICE}.onnx*"):
-                shutil.copy(f, VOICES / f.name)
-        else:
-            subprocess.run(
-                [sys.executable, "-m", "piper.download_voices", VOICE, "--download-dir", str(VOICES)], check=True
-            )
-    return model
-
-
-def wav_seconds(path: Path) -> float:
-    with wave.open(str(path), "rb") as w:
-        return w.getnframes() / w.getframerate()
-
-
-def synthesize(lines: dict, folder: Path) -> dict:
-    from piper import PiperVoice, SynthesisConfig
-
-    voice = PiperVoice.load(str(voice_model()))
-    config = SynthesisConfig(length_scale=SPEED)
-    folder.mkdir(parents=True, exist_ok=True)
-    durations = {}
-    for key, text in lines.items():
-        path = folder / f"{key}.wav"
-        with wave.open(str(path), "wb") as w:
-            voice.synthesize_wav(text, w, syn_config=config)
-        durations[key] = round(wav_seconds(path), 2)
-    return durations
 
 
 # ---------------------------------------------------------------- recording
@@ -370,7 +315,7 @@ def title_card(path: Path):
     img.save(path)
 
 
-def end_card(path: Path, narrated: bool = True):
+def end_card(path: Path):
     img = Image.new("RGB", SIZE, GREEN)
     d = ImageDraw.Draw(img)
     d.rectangle([0, SIZE[1] - 14, SIZE[0], SIZE[1]], fill=BRASS)
@@ -380,8 +325,6 @@ def end_card(path: Path, narrated: bool = True):
         y = 250 + i * 90
         centered(d, y, label.upper(), label_font, "#E8D9B5")
         centered(d, y + 32, url, link_font, INK)
-    if narrated:
-        centered(d, 600, "Narration: AI voice (Piper, open source)", font("arial.ttf", 22), CREAM)
     img.save(path)
 
 
@@ -416,20 +359,14 @@ def captions(timeline: dict, offset: float) -> str:
     return head + "\n".join(lines) + "\n"
 
 
-def narration_cues(timeline: dict) -> list[tuple[float, float, str]]:
-    durations = timeline["durations"]
-    lines = [(LEAD, "title")] + [(s["audio"], s["key"]) for s in timeline["steps"]]
-    if timeline.get("end_audio") is not None:
-        lines.append((timeline["end_audio"], "end"))
-    cues = []
-    for start, key in lines:
-        text, length = NARRATION[key], durations.get(key, 0)
-        sentences = [s for s in re.split(r"(?<=[.:?!])\s+(?=[A-Z])", text) if s]
-        total, t = sum(len(s) for s in sentences), start
-        for s in sentences:
-            span = length * len(s) / total
-            cues.append((round(t, 2), round(t + span, 2), s))
-            t += span
+def caption_cues(timeline: dict, offset: float) -> list[tuple[float, float, str]]:
+    """(start, end, caption) per step in video time: the same words as the burned-in captions, for the web
+    copy's WebVTT track."""
+    steps, cues = timeline["steps"], []
+    for i, step in enumerate(steps):
+        start = step["start"] - timeline["trim"] + offset
+        stop = (steps[i + 1]["start"] if i + 1 < len(steps) else timeline["end"]) - timeline["trim"] + offset
+        cues.append((round(start, 2), round(stop - 0.05, 2), step["caption"]))
     return cues
 
 
@@ -444,43 +381,12 @@ def ffmpeg(*args: str):
     subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *args], check=True, cwd=WORK)
 
 
-def mix_narration(timeline: dict, total: float) -> Path:
-    clips = [("title", LEAD)] + [(s["key"], s["audio"]) for s in timeline["steps"]] + [("end", timeline["end_audio"])]
-    inputs, chains = [], []
-    for i, (key, at) in enumerate(clips):
-        inputs += ["-i", f"voice/{key}.wav"]
-        ms = int(at * 1000)
-        chains.append(f"[{i}:a]adelay={ms}|{ms},aresample=48000[a{i}]")
-    graph = ";".join(chains) + ";" + "".join(f"[a{i}]" for i in range(len(clips)))
-    graph += f"amix=inputs={len(clips)}:normalize=0,apad=whole_dur={total:.2f},loudnorm=I=-16:TP=-1.5:LRA=11[out]"
-    ffmpeg(
-        *inputs,
-        "-filter_complex",
-        graph,
-        "-map",
-        "[out]",
-        "-t",
-        f"{total:.2f}",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "160k",
-        "-ar",
-        "48000",
-        "narration.m4a",
-    )
-    return WORK / "narration.m4a"
-
-
-def build(timeline: dict, voice: bool) -> Path:
+def build(timeline: dict) -> Path:
     length = timeline["end"] - timeline["trim"]
-    durations = timeline["durations"]
-    end_audio = TITLE_SECONDS + length + LEAD if voice else None
-    end_seconds = max(6.0, (durations.get("end", 0) + LEAD + 1.2) if voice else 6.0)
-    timeline["end_audio"] = end_audio
+    end_seconds = 6.0
     total = TITLE_SECONDS + length + end_seconds
     title_card(WORK / "title.png")
-    end_card(WORK / "end.png", narrated=voice)
+    end_card(WORK / "end.png")
     (WORK / "captions.ass").write_text(captions(timeline, TITLE_SECONDS), encoding="utf-8")
     scale = f"scale={SIZE[0]}:{SIZE[1]},fps={FPS},format=yuv420p,setsar=1"
     band = f"scale={VIEW[0]}:{VIEW[1]},pad={SIZE[0]}:{SIZE[1]}:0:0:color=0x111111,fps={FPS},format=yuv420p,setsar=1"
@@ -492,23 +398,16 @@ def build(timeline: dict, voice: bool) -> Path:
     )
     OUT.mkdir(parents=True, exist_ok=True)
     out = OUT / "demo.mp4"
-    audio = ["-i", str(mix_narration(timeline, total)), "-map", "3:a", "-c:a", "copy"] if voice else []
     ffmpeg(
         *("-loop", "1", "-t", str(TITLE_SECONDS), "-i", "title.png"),
         *("-ss", f"{timeline['trim']:.2f}", "-t", f"{length:.2f}", "-i", "raw.webm"),
         *("-loop", "1", "-t", f"{end_seconds:.2f}", "-i", "end.png"),
-        *audio[:2],
         *("-filter_complex", graph, "-map", "[v]"),
-        *audio[2:],
         *("-c:v", "libx264", "-preset", "slow", "-crf", "22", "-pix_fmt", "yuv420p", "-movflags", "+faststart"),
         *("-t", f"{total:.2f}"),
         str(out),
     )
-    if voice:
-        cues = narration_cues(timeline)
-        (OUT / "demo.vtt").write_text(webvtt(cues), encoding="utf-8")
-        lines = [f"[{int(a // 60)}:{a % 60:04.1f}] {text}" for a, _, text in cues]
-        (OUT / "narration-script.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (OUT / "demo.vtt").write_text(webvtt(caption_cues(timeline, TITLE_SECONDS)), encoding="utf-8")
     (WORK / "timeline.json").write_text(json.dumps(timeline, indent=2), encoding="utf-8")
     return out
 
@@ -517,7 +416,7 @@ def web_copy(src: Path, dest: Path):
     dest.parent.mkdir(parents=True, exist_ok=True)
     ffmpeg(
         *("-i", str(src), "-c:v", "libx264", "-preset", "slow", "-crf", "27", "-profile:v", "high"),
-        *("-c:a", "aac", "-b:a", "128k", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dest)),
+        *("-an", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dest)),
     )
     ffmpeg("-ss", "1.5", "-i", str(src), "-frames:v", "1", "-q:v", "3", str(dest.with_name(dest.stem + "-poster.jpg")))
     if (OUT / "demo.vtt").exists():
@@ -526,39 +425,7 @@ def web_copy(src: Path, dest: Path):
 
 def linkedin_copy(dest: Path):
     dest.parent.mkdir(parents=True, exist_ok=True)
-    cues = narration_cues(json.loads((WORK / "timeline.json").read_text(encoding="utf-8")))
-    srt = "".join(
-        f"{i}\n{vtt_time(a).replace('.', ',')} --> {vtt_time(b).replace('.', ',')}\n{text}\n\n"
-        for i, (a, b, text) in enumerate(cues, 1)
-    )
-    (OUT / "demo.srt").write_text(srt, encoding="utf-8")
-    style = (
-        "FontName=Arial,FontSize=18,PrimaryColour=&H00FFFFFF,BackColour=&H99000000,BorderStyle=4,Alignment=6,MarginV=14"
-    )
-    subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-i",
-            "demo.mp4",
-            "-vf",
-            f"subtitles=demo.srt:force_style='{style}'",
-            "-c:v",
-            "libx264",
-            "-crf",
-            "22",
-            "-c:a",
-            "copy",
-            "-movflags",
-            "+faststart",
-            str(dest),
-        ],
-        check=True,
-        cwd=OUT,
-    )
+    shutil.copy(OUT / "demo.mp4", dest)  # the step captions are already burned in
     card = Image.open(WORK / "title.png").convert("RGB")
     width = round(card.height * 1200 / 627)
     left = (card.width - width) // 2
@@ -569,7 +436,7 @@ def linkedin_copy(dest: Path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--rebuild", action="store_true", help="reuse the last recording and narration")
+    parser.add_argument("--rebuild", action="store_true", help="reuse the last recording")
     parser.add_argument("--web-out", type=Path)
     parser.add_argument("--linkedin-out", type=Path)
     args = parser.parse_args()
@@ -580,7 +447,7 @@ def main():
     else:
         shutil.rmtree(WORK, ignore_errors=True)
         WORK.mkdir(parents=True)
-        timeline = record(synthesize(NARRATION, WORK / "voice"))
+        timeline = record({})
     out = build(timeline, True)
     print(f"saved {out.relative_to(ROOT)}")
     if args.web_out:
