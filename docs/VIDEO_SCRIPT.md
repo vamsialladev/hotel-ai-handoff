@@ -26,9 +26,10 @@ Admin password on screen; skip the Operations page or record it from a local run
 | 2 | Same app, same conversation | `There is smoke coming from under a door` |
 | 3 | <https://guest-request-agent.streamlit.app/?email=E12> | Click **Run the agent on this email** |
 
-Tested 2026-10-24: both live apps answered (Streamlit status: up). Inputs 1 and 2 match the stage 4 held-out cases
-that pass in the v1.6.0 release run (Spanish answer, emergency without a model call); E12 passes 6/6 in the v1.1.0
-release run. Check all three once on the live apps before recording.
+Checked 2026-10-24: both live apps report "up" on the daily health check's status API. Against the v1.6.0 code
+(locally, no API): input 1 passes the scope check and retrieves Beach Resort's pet policy; input 2 is flagged as an
+emergency, so it never reaches the model. E12 gets the right hotel in 6/6 runs of the v1.1.0 release run. I didn't
+type these on the live apps; do that once before recording.
 
 ## LinkedIn caption (one sentence)
 
