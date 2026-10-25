@@ -1,0 +1,73 @@
+1
+00:00:03,000 --> 00:00:05,496
+The two hotel assistants worked as demos.
+
+2
+00:00:06,346 --> 00:00:10,165
+But the hotel's IT lead asked: who gets told when it's down?
+
+3
+00:00:11,015 --> 00:00:12,380
+How do I switch it off?
+
+4
+00:00:13,230 --> 00:00:14,830
+This repo is my answer.
+
+5
+00:00:15,680 --> 00:00:18,112
+Simulated client, synthetic data.
+
+6
+00:00:18,719 --> 00:00:20,831
+First, the fixes the evals found.
+
+7
+00:00:21,681 --> 00:00:23,985
+A Spanish question used to get blocked;
+
+8
+00:00:24,835 --> 00:00:27,182
+now it's answered in Spanish, with the source.
+
+9
+00:00:28,032 --> 00:00:33,045
+And an email sent to the wrong hotel's inbox is now answered for the
+right hotel.
+
+10
+00:00:33,656 --> 00:00:35,149
+Then the handoff itself.
+
+11
+00:00:35,999 --> 00:00:40,629
+Eight runbooks: an outage, a cost spike, a bad answer, an injection
+attempt.
+
+12
+00:00:41,479 --> 00:00:43,889
+Each one says who does what, in what order.
+
+13
+00:00:44,516 --> 00:00:47,055
+There are service levels, with an error budget,
+
+14
+00:00:47,905 --> 00:00:50,379
+and the quality gates come from the eval harness,
+
+15
+00:00:51,229 --> 00:00:54,024
+so a release that gets worse fails before it ships.
+
+16
+00:00:54,641 --> 00:00:58,161
+And a daily health check that opens an issue when an app is down,
+
+17
+00:00:59,011 --> 00:01:00,867
+and can tell asleep from broken.
+
+18
+00:01:01,717 --> 00:01:04,426
+The apps are live, and the links are in the README.
