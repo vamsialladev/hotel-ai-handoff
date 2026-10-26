@@ -1,6 +1,6 @@
 # Runbooks
 
-Step-by-step responses for the eight situations most likely to come up. Each one says how you notice it, what to do,
+Step-by-step responses for the nine situations most likely to come up. Each one says how you notice it, what to do,
 and how to check it worked. Apps: the **Hotel Operations Knowledge Assistant** (Project 1, "assistant") and the
 **Guest Request Agent** (Project 2, "agent"). Both run on Streamlit Community Cloud with a shared Neon Postgres log
 database. Everything here uses a simulated hotel group and synthetic data.
@@ -23,6 +23,7 @@ database. Everything here uses a simulated hotel group and synthetic data.
 6. [Rotating secrets](#6-rotating-secrets)
 7. [Restoring logs](#7-restoring-logs)
 8. [Adding a new property's documents](#8-adding-a-new-propertys-documents)
+9. [Debug a failed request using its trace ID](#9-debug-a-failed-request-using-its-trace-id)
 
 ---
 
@@ -169,3 +170,50 @@ Example: a third property, `city-hotel`.
 
 **Check it worked:** in the live assistant, pick the new property and ask one of the new questions: the cited passage
 is from `city-hotel`.
+
+---
+
+## 9. Debug a failed request using its trace ID
+
+Every hotel app writes one trace per request to the shared Neon tables `ops_request_log` and `ops_trace_span`
+([hotel-ai-platform](https://github.com/vamsialladev/hotel-ai-platform)). When something fails, the person sees a
+short reference, for example "Reference: 4f1c9a2e": the first 8 characters of the trace ID.
+
+**You notice it when:** a staff member or guest quotes a reference; the daily failure summary (streamlit-keep-awake →
+Actions → **Daily failure summary**) opens an issue; or Admin shows a rising error rate.
+
+1. **Find the request.** Open the app's owner page:
+
+   | App | Where the traces are |
+   |---|---|
+   | Knowledge Assistant, Guest Request Agent | `/admin` → sign in → **Traces** in the sidebar |
+   | Activities Concierge | `/staff` → sign in → **Traces** tab |
+   | Tools MCP demo, Ops Analytics, Account Research | `/admin` (its own sign-in) |
+
+   Paste the reference into **Trace reference**. No reference? Turn on **Failures only** and pick the row by time.
+2. **Read the waterfall.** One bar per step, in order, coloured by status (green ok, amber blocked, red error). The
+   step in red is where it failed; its duration tells you whether it was slow (a timeout shows as a long bar ending
+   in red). Typical steps: `guardrails.input` → rewrite → retrieval or tools → `model_call` → `guardrails.output`.
+3. **Open the redacted record and the spans.** `error_type` names the failure class (for example `APITimeoutError`,
+   `RateLimitError`, `OperationalError`); the span's attributes hold its inputs and outputs with personal data and
+   secrets already removed. Nothing here contains a card number, an email or a key.
+4. **Decide what kind of failure it is:**
+
+   | What you see | Likely cause | Next step |
+   |---|---|---|
+   | `model_call` red, `APITimeoutError` / `APIConnectionError` | Anthropic slow or down | Runbook 1 (API outage) |
+   | `model_call` red, `RateLimitError` / 429 | Too many requests, or the Console limit reached | Runbook 2 (cost spike) |
+   | `guardrails.input` amber | Blocked on purpose (injection, card number, data request) | Nothing to fix unless it was a real question: then add it as a benign red-team case and adjust |
+   | `guardrails.output` amber | The answer was replaced (a promise, a leaked contact detail) | Read the original in the record; if the model is drifting, add an eval case |
+   | A tool or SQL span red | Bad arguments or a tool bug | Reproduce locally with the arguments from the span |
+   | No trace at all for the time given | The request never reached the app, or the log write failed | Admin → System health → log store `write_errors`; Streamlit Cloud → Logs (`log_write_failed`) |
+
+5. **Check the app's JSON logs** for the same trace ID if you need the stack: Streamlit Cloud → app → **⋮** → Logs,
+   search for the 8 characters. `exception` lines carry a redacted stack trace; `slow_request` lines show requests
+   over the p95 budget.
+6. **Fix and prove it.** Add the failing input as an eval or red-team case first, see it fail, fix, and let CI's gates
+   pass before redeploying.
+
+**Check it worked:** ask the same question again; the new trace is all green, and the next daily failure summary
+doesn't list the app.
+

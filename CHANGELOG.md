@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versions follow
 
 ## [Unreleased]
 
+### Added
+
+- Runbook 9: debug a failed request using its trace ID (the shared ops traces in every hotel app).
+
 ### Changed
 
 - README in the portfolio order: value line, demo video slot, "Try it live" with the wake note, At a glance, the
