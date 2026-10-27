@@ -35,9 +35,16 @@ jobs:
         run: |
           ruff check .
           ruff format --check .
-      - run: python -m pytest -q
+      - name: Tests (coverage gate 75% on the health check)
+        run: python -m pytest -q --cov=scripts --cov-report=term-missing --cov-fail-under=75
       - name: Dependency audit
         run: pip-audit -r requirements-dev.txt
+      - name: SBOM (CycloneDX)
+        run: cyclonedx-py environment --output-format JSON --output-file sbom.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom.json
 
   secrets:
     name: Secret scan (gitleaks)
