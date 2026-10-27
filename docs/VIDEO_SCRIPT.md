@@ -1,6 +1,6 @@
 # Video script: Production and handoff (about 80 seconds)
 
-I record this myself, in my own voice, over a screen recording. No AI voice. Setup and tips: `RECORDING_GUIDE.md`
+I record this myself, in my own voice, over a screen recording. Until I do, the AI-narrated version is in `docs/video/demo-ai-voice.mp4` (narration at the end of this file). Setup and tips: `RECORDING_GUIDE.md`
 in my portfolio folder. Read it twice, then talk from the bullets. `/` marks a natural pause. Aim for 140–160 words
 a minute.
 
@@ -35,3 +35,15 @@ type these on the live apps; do that once before recording.
 
 Handing an AI system to a client isn't the demo: it's the fixes the evals found, a kill switch, redacted logs,
 eight runbooks and a health check that tells "asleep" from "down".
+
+## AI narration (used in docs/video/demo-ai-voice.mp4)
+
+Until I record my own voice, the demo video (1:04) is narrated by an AI voice (Kokoro `af_heart`, local) and labelled "AI-narrated" on screen and here. It was recorded from the rendered documents on GitHub with Playwright; the captions are the narration, timed to the voice. `/` marks a pause.
+
+| Step | Narration |
+|---|---|
+| problem | The two hotel assistants worked as demos. / But the hotel's IT lead asked: who gets told when it's down? / How do I switch it off? / This repo is my answer. Simulated client, synthetic data. |
+| fixes | First, the fixes the evals found. / A Spanish question used to get blocked; / now it's answered in Spanish, with the source. / And an email sent to the wrong hotel's inbox is now answered for the right hotel. |
+| runbooks | Then the handoff itself. / Eight runbooks: an outage, a cost spike, a bad answer, an injection attempt. / Each one says who does what, in what order. |
+| slos | There are service levels, with an error budget, / and the quality gates come from the eval harness, / so a release that gets worse fails before it ships. |
+| health | And a daily health check that opens an issue when an app is down, / and can tell asleep from broken. / The apps are live, and the links are in the README. |

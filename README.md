@@ -13,6 +13,11 @@ service levels, staff and admin guides, a decision index, a readiness checklist 
 > [hotel-ai-discovery](https://github.com/vamsialladev/hotel-ai-discovery).
 
 <!-- DEMO-VIDEO -->
+<!-- AI-NARRATED-DEMO:START -->
+<a href="https://vamsialla.com/projects/production-and-handoff.html#demo"><img src="docs/video/demo-ai-voice.jpg" alt="Demo video, AI-narrated: a scroll through the handoff package: production fixes, runbooks, service levels and the daily health check" width="720"></a>
+
+**Demo video (1:04, AI-narrated):** [watch it with sound on vamsialla.com](https://vamsialla.com/projects/production-and-handoff.html#demo) (GitHub can't play MP4 files from a repo) · [download the MP4](docs/video/demo-ai-voice.mp4) · captions burned in ([text](docs/video/demo-ai-voice.srt)). The narrator is an AI voice (Kokoro); my own-voice version will replace it.
+<!-- AI-NARRATED-DEMO:END -->
 
 **▶ Try it live:** [Knowledge Assistant](https://hotel-ops-assistant.streamlit.app) ·
 [Guest Request Agent](https://guest-request-agent.streamlit.app) · [Eval dashboard](https://eval-harness.streamlit.app)
@@ -57,6 +62,28 @@ flowchart LR
     H -- "gates in CI" --> B
     C[Daily health check] --> A
     C --> B
+```
+
+The daily health check, the one flow this repo runs itself:
+
+```mermaid
+sequenceDiagram
+    participant A as GitHub Actions (daily)
+    participant H as scripts/health_check.py
+    participant S as Streamlit status API
+    participant DB as Postgres log (optional)
+    participant I as GitHub issue "health-alert"
+    A->>H: run
+    loop each live app
+        H->>S: app status
+        S-->>H: 5 = up, 12 = asleep (fine on free hosting), anything else = down
+    end
+    opt HEALTH_DATABASE_URL is set
+        H->>DB: error rate over the last 24 h
+    end
+    alt an app is down or errors are high
+        H->>I: open the issue, or comment on the open one
+    end
 ```
 
 The assistant answers from the hotel's documents. The agent uses the same search (a pinned copy) as one of its
