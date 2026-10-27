@@ -7,17 +7,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versions follow
 ### Added
 
 - Runbook 9: debug a failed request using its trace ID (the shared ops traces in every hotel app).
+- gitleaks (CI and pre-commit), pip-audit in CI, `.env.example`, a Dockerfile for the health check, OWASP LLM Top 10
+  mapping in SECURITY.md.
 
 ### Changed
 
 - README in the portfolio order: value line, demo video slot, "Try it live" with the wake note, At a glance, the
   problem, Business value, Design at scale, Limitations and roadmap, Skills demonstrated.
 - `scripts/record_demo.py` records a captioned screen recording with no AI voice.
-
-### Added
-
-- gitleaks (CI and pre-commit), pip-audit in CI, `.env.example`, a Dockerfile for the health check, OWASP LLM Top 10
-  mapping in SECURITY.md.
 
 ## [1.0.0] - 2026-10-15
 
