@@ -15,3 +15,7 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+# The gate covers what the client runs (the health check); the video tools are owner-only.
+omit = ["scripts/record_demo.py", "scripts/make_captions.py"]

@@ -3,3 +3,5 @@ pytest~=9.1
 ruff==0.17.0
 psycopg[binary]~=3.3
 pip-audit~=2.9
+pytest-cov~=7.1
+cyclonedx-bom~=7.1
