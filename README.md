@@ -158,6 +158,16 @@ What exists today is marked **Built**; anything else is **Roadmap**. Details: [A
 | **Monitoring, alerting, hallucination and off-brand detection** | **Built:** daily health check that opens a `health-alert` issue; optional 24-hour error rate from the log database; owner Operations pages with p95 and cost budgets; eval gates in both apps' CI; grounding checks on every answer. **Roadmap:** paging instead of GitHub issues; off-brand detection once an LLM judge agrees with human labels. |
 | **Failure modes and rollback** | **Built:** runbooks for API outage, cost spike, bad answer, prompt injection, app asleep or down, rotating secrets, restoring logs, adding a property; `KILL_SWITCH` in both apps. Rollback: revert the commit on `main` (Streamlit Cloud redeploys) or run the previous release tag. |
 
+## Security & guardrails
+
+What's stored, for how long, and how it's redacted before any write is in
+[docs/SECURITY_PRIVACY.md](docs/SECURITY_PRIVACY.md). In short: visitor questions, answers and staff decisions are
+kept 30 days in Postgres, redacted first; staff and Admin pages need a password; `KILL_SWITCH` stops either app
+without a deploy. [SECURITY.md](SECURITY.md) covers this repo and how to report a problem.
+
+**Red team:** this repo has no app or model; [docs/RED_TEAM.md](docs/RED_TEAM.md) says where the two apps' results
+live, and runbook 4 covers a [prompt-injection attempt](docs/RUNBOOKS.md#4-prompt-injection-attempt).
+
 ## Run locally
 
 ### Daily health check
