@@ -216,4 +216,3 @@ Actions → **Daily failure summary**) opens an issue; or Admin shows a rising e
 
 **Check it worked:** ask the same question again; the new trace is all green, and the next daily failure summary
 doesn't list the app.
-
