@@ -14,9 +14,9 @@ service levels, staff and admin guides, a decision index, a readiness checklist 
 
 <!-- DEMO-VIDEO -->
 <!-- AI-NARRATED-DEMO:START -->
-<a href="docs/video/demo-ai-voice.mp4"><img src="docs/video/demo-ai-voice.jpg" alt="Demo video, AI-narrated: a scroll through the handoff package: production fixes, runbooks, service levels and the daily health check" width="720"></a>
+<a href="https://vamsialla.com/projects/production-and-handoff.html#demo"><img src="docs/video/demo-ai-voice.jpg" alt="Demo video, AI-narrated: a scroll through the handoff package: production fixes, runbooks, service levels and the daily health check" width="720"></a>
 
-**Demo video (1:04, AI-narrated):** [watch the MP4](docs/video/demo-ai-voice.mp4) · captions burned in ([text](docs/video/demo-ai-voice.srt)). The narrator is an AI voice (Kokoro); my own-voice version will replace it.
+**Demo video (1:04, AI-narrated):** [watch it with sound on vamsialla.com](https://vamsialla.com/projects/production-and-handoff.html#demo) (GitHub can't play MP4 files from a repo) · [download the MP4](docs/video/demo-ai-voice.mp4) · captions burned in ([text](docs/video/demo-ai-voice.srt)). The narrator is an AI voice (Kokoro); my own-voice version will replace it.
 <!-- AI-NARRATED-DEMO:END -->
 
 **▶ Try it live:** [Knowledge Assistant](https://hotel-ops-assistant.streamlit.app) ·
