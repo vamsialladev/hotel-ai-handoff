@@ -3,6 +3,8 @@
 [![CI](https://github.com/vamsialladev/hotel-ai-handoff/actions/workflows/ci.yml/badge.svg)](https://github.com/vamsialladev/hotel-ai-handoff/actions/workflows/ci.yml)
 [![Health check](https://github.com/vamsialladev/hotel-ai-handoff/actions/workflows/health-check.yml/badge.svg)](https://github.com/vamsialladev/hotel-ai-handoff/actions/workflows/health-check.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
+![coverage gate 75%](https://img.shields.io/badge/coverage%20gate-%E2%89%A575%25-brightgreen)
 
 **Everything a hotel group's IT and operations teams need to run, monitor and extend three AI systems: runbooks,
 service levels, staff and admin guides, a decision index, a readiness checklist and a daily health check.**
